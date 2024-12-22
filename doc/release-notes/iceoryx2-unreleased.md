@@ -22,10 +22,8 @@ Remove the `print_system_configuration()` function in
 
 ### New CLI features
 
-```bash
-   iox2-config show system
+iox2 config show system
 
-   iox2-config show current
+iox2 config show current
 
-   iox2-config generate
-```
+iox2 config generate

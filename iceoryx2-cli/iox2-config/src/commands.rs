@@ -1,4 +1,4 @@
-//  Copyright (c) 2024 Contributors to the Eclipse Foundation
+// Copyright (c) 2024 Contributors to the Eclipse Foundation
 //
 // See the NOTICE file(s) distributed with this work for additional
 // information regarding copyright ownership.
@@ -115,10 +115,7 @@ pub fn show_system_config() -> Result<()> {
 
 pub fn show_current_config() -> Result<()> {
     let config = Config::global_config();
-    let json_config = serde_json::to_value(config).unwrap_or_else(|_| serde_json::json!({}));
-    let toml_config = toml::to_string_pretty(&json_config)
-        .unwrap_or_else(|_| "Failed to convert to TOML".to_string());
-
+    let toml_config = toml::to_string_pretty(&config)?;
     println!("{}", toml_config);
 
     Ok(())

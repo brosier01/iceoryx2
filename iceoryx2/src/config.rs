@@ -79,7 +79,7 @@ use iceoryx2_cal::config_path::config_dir;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
-use iceoryx2_bb_log::{debug, fail, trace, warn};
+use iceoryx2_bb_log::{fail, trace, warn};
 
 use crate::service::port_factory::publisher::UnableToDeliverStrategy;
 
@@ -404,25 +404,33 @@ impl Config {
     /// [`Config::setup_global_config_from_file()`]
     /// is called after this function was called, no file will be loaded since the global default
     /// config was already populated.
-
     pub fn global_config() -> &'static Config {
         if !ICEORYX2_CONFIG.is_initialized() {
-            let config_path = config_dir().unwrap().join("iceoryx2").join("config.toml");
-
-            match FilePath::new(config_path.as_os_str().as_encoded_bytes()) {
-                Ok(path) => {
-                    if Config::setup_global_config_from_file(&path).is_err() {
-                        warn!(from "Config::global_config()", "Default config file found but unable to read data, populate config with default values.");
-                        ICEORYX2_CONFIG.set_value(Config::default());
+            match config_dir() {
+                Some(dir) => {
+                    let config_path = dir.join("iceoryx2").join("config.toml");
+                    match FilePath::new(config_path.as_os_str().as_encoded_bytes()) {
+                        Ok(path) => match Config::setup_global_config_from_file(&path) {
+                            Ok(config) => {
+                                ICEORYX2_CONFIG.set_value(config.clone());
+                            }
+                            Err(_) => {
+                                warn!(from "Config::global_config()", "Default config file found but unable to read data, using default config.");
+                                ICEORYX2_CONFIG.set_value(Config::default());
+                            }
+                        },
+                        Err(_) => {
+                            warn!(from "Config::global_config()", "Error creating FilePath, using default config.");
+                            ICEORYX2_CONFIG.set_value(Config::default());
+                        }
                     }
                 }
-                Err(e) => {
-                    warn!(from "Config::global_config()", "Error: {:?}", e);
+                None => {
+                    warn!(from "Config::global_config()", "Failed to retrieve config directory, using default config.");
                     ICEORYX2_CONFIG.set_value(Config::default());
                 }
-            }
+            };
         }
-
         ICEORYX2_CONFIG.get()
     }
 }

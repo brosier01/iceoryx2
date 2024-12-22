@@ -10,13 +10,20 @@
 //
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
-//! use iceoryx2_cal::config_path::config_dir;
-//!
-//! let config_dir = config_dir().unwrap();
-//! println!("Config dir: {:?}", config_dir);
+use ::dirs;
 
-pub mod dirs;
+pub struct DirsConfigPathProvider;
+
+pub trait ConfigPathProvider {
+    fn config_dir() -> Option<std::path::PathBuf>;
+}
+
+impl ConfigPathProvider for DirsConfigPathProvider {
+    fn config_dir() -> Option<std::path::PathBuf> {
+        dirs::config_dir()
+    }
+}
 
 pub fn config_dir() -> Option<std::path::PathBuf> {
-    dirs::config_dir()
+    DirsConfigPathProvider::config_dir()
 }
